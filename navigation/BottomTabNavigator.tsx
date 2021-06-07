@@ -10,9 +10,9 @@ import * as React from 'react';
 
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
-import TabOneScreen from '../screens/TabOneScreen';
-import TabTwoScreen from '../screens/TabTwoScreen';
-import { BottomTabParamList, TabOneParamList, TabTwoParamList } from '../types';
+import WalletsScreen from '../screens/WalletsScreen';
+import KeysScreen from '../screens/KeysScreen';
+import { BottomTabParamList, WalletsParamList, KeysParamList } from '../types';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -21,18 +21,18 @@ export default function BottomTabNavigator() {
 
   return (
     <BottomTab.Navigator
-      initialRouteName="TabOne"
+      initialRouteName="Wallets"
       tabBarOptions={{ activeTintColor: Colors[colorScheme].tint }}>
       <BottomTab.Screen
-        name="TabOne"
-        component={TabOneNavigator}
+        name="Wallets"
+        component={WalletsNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="ios-code" color={color} />,
         }}
       />
       <BottomTab.Screen
-        name="TabTwo"
-        component={TabTwoNavigator}
+        name="Keys"
+        component={KeysNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="ios-code" color={color} />,
         }}
@@ -49,30 +49,30 @@ function TabBarIcon(props: { name: React.ComponentProps<typeof Ionicons>['name']
 
 // Each tab has its own navigation stack, you can read more about this pattern here:
 // https://reactnavigation.org/docs/tab-based-navigation#a-stack-navigator-for-each-tab
-const TabOneStack = createStackNavigator<TabOneParamList>();
+const WalletsStack = createStackNavigator<WalletsParamList>();
 
-function TabOneNavigator() {
+function WalletsNavigator() {
   return (
-    <TabOneStack.Navigator>
-      <TabOneStack.Screen
-        name="TabOneScreen"
-        component={TabOneScreen}
-        options={{ headerTitle: 'Tab One Title' }}
+    <WalletsStack.Navigator>
+      <WalletsStack.Screen
+        name="WalletsScreen"
+        component={WalletsScreen}
+        options={{ headerTitle: 'Wallets' }}
       />
-    </TabOneStack.Navigator>
+    </WalletsStack.Navigator>
   );
 }
 
-const TabTwoStack = createStackNavigator<TabTwoParamList>();
+const KeysStack = createStackNavigator<KeysParamList>();
 
-function TabTwoNavigator() {
+function KeysNavigator() {
   return (
-    <TabTwoStack.Navigator>
-      <TabTwoStack.Screen
-        name="TabTwoScreen"
-        component={TabTwoScreen}
-        options={{ headerTitle: 'Tab Two Title' }}
+    <KeysStack.Navigator>
+      <KeysStack.Screen
+        name="KeysScreen"
+        component={KeysScreen}
+        options={{ headerTitle: 'Keys' }}
       />
-    </TabTwoStack.Navigator>
+    </KeysStack.Navigator>
   );
 }
