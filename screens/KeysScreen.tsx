@@ -6,18 +6,20 @@ import { View } from '../components/Themed';
 import Header from '../components/Header';
 
 import * as tapyrus from 'tapyrusjs-lib';
-import * as walelt from 'tapyrusjs-wallet';
+import * as wallet from 'tapyrusjs-wallet';
 
 export default function KeysScreen({ navigation }) {
   const [keys, setKeys] = useState<string[]>([]);
   const [isLoading, setLoading] = useState(true);
-  const keyStore = new walelt.KeyStore.ReactKeyStore(tapyrus.networks.dev);
+  const keyStore = new wallet.KeyStore.ReactKeyStore(tapyrus.networks.dev);
 
   useEffect(() => {
     keyStore
       .keys()
       .then(setKeys)
-      .catch((e: any) => { console.error(e) })
+      .catch((e: any) => {
+        console.error(e);
+      })
       .finally(() => {
         setLoading(false);
       });
@@ -31,18 +33,18 @@ export default function KeysScreen({ navigation }) {
           navigation={navigation}
           actions={[
             <Appbar.Action
-              icon='plus'
+              icon="plus"
               onPress={() => {
-                addKey().then((key) => {
-                  setKeys((keys) => [...keys, key]);
+                addKey().then(key => {
+                  setKeys(keys => [...keys, key]);
                 });
               }}
             />,
             <Appbar.Action
-              icon='delete'
+              icon="delete"
               onPress={() => {
                 removeAllKeys().then(() => {
-                  setKeys((_keys) => []);
+                  setKeys(_keys => []);
                 });
               }}
             />,
@@ -59,12 +61,12 @@ export default function KeysScreen({ navigation }) {
 }
 
 async function removeAllKeys() {
-  const keyStore = new walelt.KeyStore.ReactKeyStore(tapyrus.networks.dev);
+  const keyStore = new wallet.KeyStore.ReactKeyStore(tapyrus.networks.dev);
   return await keyStore.clear();
 }
 
 async function addKey() {
-  const keyStore = new walelt.KeyStore.ReactKeyStore(tapyrus.networks.dev);
+  const keyStore = new wallet.KeyStore.ReactKeyStore(tapyrus.networks.dev);
   const keyPair = tapyrus.ECPair.makeRandom({ network: tapyrus.networks.dev });
   await keyStore.addPrivateKey(keyPair.toWIF());
   return keyPair.privateKey!.toString('hex');

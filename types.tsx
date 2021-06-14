@@ -4,14 +4,14 @@
  */
 
 export type RootStackParamList = {
-  Wallets: undefined;
+  Wallet: undefined;
   Keys: undefined;
   Utxos: undefined;
   NotFound: undefined;
 };
 
-export type WalletsParamList = {
-  WalletsScreen: undefined;
+export type WalletParamList = {
+  WalletScreen: undefined;
 };
 
 export type KeysParamList = {

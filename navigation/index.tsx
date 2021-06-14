@@ -16,6 +16,7 @@ import NotFoundScreen from '../screens/NotFoundScreen';
 import { RootStackParamList } from '../types';
 import UtxosScreen from '../screens/UtxosScreen';
 import KeysScreen from '../screens/KeysScreen';
+import WalletScreen from '../screens/WalletScreen';
 import LinkingConfiguration from './LinkingConfiguration';
 
 export default function Navigation({
@@ -39,9 +40,10 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
   return (
-    <Stack.Navigator headerMode='screen'>
-      <Stack.Screen name='Keys' component={KeysScreen} />
-      <Stack.Screen name='Utxos' component={UtxosScreen} />
+    <Stack.Navigator headerMode="screen">
+      <Stack.Screen name="Keys" component={KeysScreen} />
+      <Stack.Screen name="Utxos" component={UtxosScreen} />
+      <Stack.Screen name="Wallet" component={WalletScreen} />
       <Stack.Screen
         name="NotFound"
         component={NotFoundScreen}

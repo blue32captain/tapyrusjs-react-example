@@ -12,9 +12,9 @@ export default {
     screens: {
       Root: {
         screens: {
-          Wallets: {
+          Wallet: {
             screens: {
-              WalletsScreen: 'Wallets',
+              WalletScreen: 'Wallet',
             },
           },
           Keys: {

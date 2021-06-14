@@ -17,9 +17,9 @@ export default function KeyList({ utxos, isLoading }) {
       </View>
     );
     return (
-      <Card style={styles.card} mode='elevated'>
-        <List.Item title={value}></List.Item>
-        <List.Item title={outPoint}></List.Item>
+      <Card style={styles.card} mode="elevated">
+        <List.Item title={value} />
+        <List.Item title={outPoint} />
       </Card>
     );
   };

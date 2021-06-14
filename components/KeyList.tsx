@@ -8,7 +8,6 @@ import { StyleSheet } from 'react-native';
 import { View } from '../components/Themed';
 
 import * as tapyrus from 'tapyrusjs-lib';
-import * as walelt from 'tapyrusjs-wallet';
 
 export default function KeyList({ keys, isLoading }) {
   const renderItem = ({ item }: { item: string }) => {

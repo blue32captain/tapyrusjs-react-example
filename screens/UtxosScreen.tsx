@@ -33,7 +33,7 @@ export default function UtxosScreen({ navigation }) {
       .then(() => {
         return currentWallet.utxos();
       })
-      .then((utxos) => {
+      .then(utxos => {
         setUtxos(utxos);
       })
       .finally(() => {
@@ -53,16 +53,16 @@ export default function UtxosScreen({ navigation }) {
           navigation={navigation}
           actions={[
             <Appbar.Action
-              icon='sync'
+              icon="sync"
               onPress={() => {
                 sync();
               }}
             />,
             <Appbar.Action
-              icon='delete'
+              icon="delete"
               onPress={() => {
                 removeAllUtxos().then(() => {
-                  setUtxos((_) => []);
+                  setUtxos(_ => []);
                 });
               }}
             />,
