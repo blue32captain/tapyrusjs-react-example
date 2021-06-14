@@ -17,9 +17,14 @@ export default {
               WalletsScreen: 'Wallets',
             },
           },
-          TabTwo: {
+          Keys: {
             screens: {
-              TabTwoScreen: 'two',
+              KeysScreen: 'Keys',
+            },
+          },
+          Utxos: {
+            screens: {
+              UtxosScreen: 'Utxos',
             },
           },
         },

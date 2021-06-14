@@ -2,13 +2,12 @@ import * as React from 'react';
 import { StyleSheet } from 'react-native';
 
 import WalletList from '../components/WalletList';
-import { Text, View } from '../components/Themed';
-import { List } from 'react-native-paper';
+import { View } from '../components/Themed';
 
 export default function WalletsScreen() {
   return (
     <View style={styles.container}>
-      <WalletList/>
+      <WalletList />
     </View>
   );
 }
@@ -18,5 +17,5 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  }
+  },
 });

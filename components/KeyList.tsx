@@ -1,36 +1,57 @@
-
 import { ActivityIndicator, FlatList } from 'react-native';
 
-import { List } from 'react-native-paper';
+import { List, Divider } from 'react-native-paper';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { StyleSheet } from 'react-native';
+
+import { View } from '../components/Themed';
 
 import * as tapyrus from 'tapyrusjs-lib';
 import * as walelt from 'tapyrusjs-wallet';
 
-export default function KeyList() {
-  const [isLoading, setLoading] = useState(true);
-  const [data, setData] = useState<string[]>([]);
-  const keyStore = new walelt.KeyStore.ReactKeyStore(tapyrus.networks.dev);
-
-  useEffect(() => {
-    keyStore.keys().then((keys) => {
-      setData(keys);
-    }).catch((e) => console.error(e))
-    .finally(() => { setLoading(false) })
-  }, []);
-
+export default function KeyList({ keys, isLoading }) {
   const renderItem = ({ item }: { item: string }) => {
-    return <List.Item title={ item } />
+    const keyPair = tapyrus.ECPair.fromPrivateKey(Buffer.from(item, 'hex'), {
+      network: tapyrus.networks.dev,
+    });
+    const address = tapyrus.payments.p2pkh({
+      pubkey: keyPair.publicKey,
+      network: tapyrus.networks.dev,
+    }).address!;
+    console.info(address);
+    return (
+      <View>
+        <List.Item title={address} style={{ padding: 20 }} />
+        <Divider />
+      </View>
+    );
   };
 
   const keyExtractor = (id: string) => id;
 
-  return isLoading ? <ActivityIndicator/> : 
-    <FlatList
-      renderItem={ renderItem }
-      keyExtractor={ keyExtractor }
-      data={ data }
-    />
-  ;
+  return isLoading ? (
+    <ActivityIndicator />
+  ) : (
+    <View style={styles.container}>
+      <FlatList
+        style={{ width: '100%' }}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        data={keys}
+      />
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  item: {
+    width: '100%',
+  },
+});

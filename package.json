@@ -7,7 +7,12 @@
     "web": "expo start --web",
     "eject": "expo eject",
     "test": "jest --watchAll",
-    "postinstall": "rn-nodeify --install stream,buffer,events,assert --hack"
+    "postinstall": "rn-nodeify --install stream,buffer,events,assert --hack",
+    "format": "npm run prettier -- --write",
+    "format:ci": "npm run prettier -- --check",
+    "lint": "tslint -p tsconfig.json -c tslint.json",
+    "mocha:ts": "mocha --recursive --require test/ts-node-register",
+    "prettier": "prettier \"**/*.ts\" \"**/*.tsx\" \"**/*.js\" --ignore-path ./.prettierignore"
   },
   "jest": {
     "preset": "jest-expo"
@@ -28,7 +33,9 @@
     "expo-font": "~9.1.0",
     "expo-linking": "~2.2.3",
     "expo-random": "~11.1.2",
+    "expo-secure-store": "~10.1.0",
     "expo-splash-screen": "~0.10.2",
+    "expo-sqlite": "~9.1.0",
     "expo-status-bar": "~1.0.4",
     "expo-web-browser": "~9.1.0",
     "react": "16.13.1",
@@ -43,17 +50,19 @@
     "react-native-screens": "~3.0.0",
     "readable-stream": "^1.0.33",
     "stream-browserify": "^1.0.0",
-    "tapyrusjs-lib": "https://github.com/chaintope/tapyrusjs-lib",
-    "tapyrusjs-wallet": "https://github.com/Yamaguchi/tapyrusjs-wallet#feature/reactnative",
+    "tapyrusjs-lib": "git+https://github.com/chaintope/tapyrusjs-lib.git",
+    "tapyrusjs-wallet": "git+https://github.com/Yamaguchi/tapyrusjs-wallet.git#feature/reactnative",
     "tslib": "^2.2.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.9.0",
+    "@babel/core": "^7.14.5",
     "@types/react": "~16.9.35",
     "@types/react-native": "~0.63.2",
     "jest-expo": "~41.0.0",
     "rn-nodeify": "^10.3.0",
-    "typescript": "~4.0.0"
+    "typescript": "~4.0.0",
+    "tslint": "^5.20.1",
+    "prettier": "1.16.4"
   },
   "react-native": {
     "_stream_transform": "readable-stream/transform",

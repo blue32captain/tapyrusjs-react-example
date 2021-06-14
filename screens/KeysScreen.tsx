@@ -1,50 +1,78 @@
-import * as React from 'react';
 import { StyleSheet } from 'react-native';
-import { FAB } from 'react-native-paper';
-
+import { Appbar } from 'react-native-paper';
+import React, { useEffect, useState } from 'react';
 import KeyList from '../components/KeyList';
-import { Text, View } from '../components/Themed';
+import { View } from '../components/Themed';
+import Header from '../components/Header';
 
 import * as tapyrus from 'tapyrusjs-lib';
 import * as walelt from 'tapyrusjs-wallet';
 
-export default function KeysScreen() {
+export default function KeysScreen({ navigation }) {
+  const [keys, setKeys] = useState<string[]>([]);
+  const [isLoading, setLoading] = useState(true);
+  const keyStore = new walelt.KeyStore.ReactKeyStore(tapyrus.networks.dev);
+
+  useEffect(() => {
+    keyStore
+      .keys()
+      .then(setKeys)
+      .catch((e: any) => { console.error(e) })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      header: ({ scene, navigation }) => (
+        <Header
+          scene={scene}
+          navigation={navigation}
+          actions={[
+            <Appbar.Action
+              icon='plus'
+              onPress={() => {
+                addKey().then((key) => {
+                  setKeys((keys) => [...keys, key]);
+                });
+              }}
+            />,
+            <Appbar.Action
+              icon='delete'
+              onPress={() => {
+                removeAllKeys().then(() => {
+                  setKeys((_keys) => []);
+                });
+              }}
+            />,
+          ]}
+        />
+      ),
+    });
+  }, [navigation]);
   return (
     <View style={styles.container}>
-      <FAB
-        style={styles.fab}
-        small
-        icon="plus"
-        onPress={() => {
-          const keyPair = tapyrus.ECPair.makeRandom();
-          const keyStore = new walelt.KeyStore.ReactKeyStore(tapyrus.networks.dev);
-          keyStore.addPrivateKey(keyPair.toWIF());
-        }}
-      />
-      <KeyList />
+      <KeyList keys={keys} isLoading={isLoading} />
     </View>
   );
 }
 
+async function removeAllKeys() {
+  const keyStore = new walelt.KeyStore.ReactKeyStore(tapyrus.networks.dev);
+  return await keyStore.clear();
+}
+
+async function addKey() {
+  const keyStore = new walelt.KeyStore.ReactKeyStore(tapyrus.networks.dev);
+  const keyPair = tapyrus.ECPair.makeRandom({ network: tapyrus.networks.dev });
+  await keyStore.addPrivateKey(keyPair.toWIF());
+  return keyPair.privateKey!.toString('hex');
+}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
   },
 });
