@@ -18,7 +18,7 @@ export default function UtxosScreen({ navigation }) {
     host: 'localhost',
     port: 3000,
     path: '',
-    network: tapyrus.networks.dev,
+    network: 'dev',
   });
   const currentWallet = new wallet.Wallet.BaseWallet(
     keyStore,
@@ -33,7 +33,7 @@ export default function UtxosScreen({ navigation }) {
       .then(() => {
         return currentWallet.utxos();
       })
-      .then(utxos => {
+      .then((utxos: any[]) => {
         setUtxos(utxos);
       })
       .finally(() => {
