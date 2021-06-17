@@ -1,4 +1,4 @@
-import { Appbar, Menu } from 'react-native-paper';
+import { Appbar, Divider, Menu } from 'react-native-paper';
 import * as React from 'react';
 import {} from '@react-navigation/stack';
 
@@ -21,6 +21,14 @@ export default function Header({ scene, navigation, previous, actions }) {
         >
           <Menu.Item
             onPress={() => {
+              navigation.navigate('Wallet');
+              setVisible(false);
+            }}
+            title="Wallet"
+          />
+          <Divider></Divider>
+          <Menu.Item
+            onPress={() => {
               navigation.navigate('Keys');
               setVisible(false);
             }}
@@ -32,13 +40,6 @@ export default function Header({ scene, navigation, previous, actions }) {
               setVisible(false);
             }}
             title="Utxos"
-          />
-          <Menu.Item
-            onPress={() => {
-              navigation.navigate('Wallet');
-              setVisible(false);
-            }}
-            title="Wallet"
           />
         </Menu>
       )}

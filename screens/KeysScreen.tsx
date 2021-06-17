@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { Appbar } from 'react-native-paper';
-import React, { useEffect, useState } from 'react';
+import * as React from 'react';
+import { useEffect, useState } from 'react';
 import KeyList from '../components/KeyList';
 import { View } from '../components/Themed';
 import Header from '../components/Header';
@@ -33,6 +34,7 @@ export default function KeysScreen({ navigation }) {
           navigation={navigation}
           actions={[
             <Appbar.Action
+              key={0}
               icon="plus"
               onPress={() => {
                 addKey().then(key => {
@@ -41,6 +43,7 @@ export default function KeysScreen({ navigation }) {
               }}
             />,
             <Appbar.Action
+              key={1}
               icon="delete"
               onPress={() => {
                 removeAllKeys().then(() => {

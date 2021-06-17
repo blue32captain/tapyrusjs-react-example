@@ -1,25 +1,24 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ScrollView} from 'react-native';
 import {
   ActivityIndicator,
-  Button,
   Portal,
-  Dialog,
-  TextInput,
-  IconButton,
+  Appbar,
+  FAB,
 } from 'react-native-paper';
-import React, { useEffect, useState } from 'react';
-import { View, Text } from '../components/Themed';
+import * as React from 'react';
+import { useEffect, useState } from 'react';
+import { View } from '../components/Themed';
 import Header from '../components/Header';
-import { useWindowDimensions } from 'react-native';
-
-import { BarCodeScanner } from 'expo-barcode-scanner';
-
-import QRCode from 'react-native-qrcode-svg';
+import Token, { TokenStore } from '../models/Token';
+import AddTokenDialog from './AddTokenDialog';
+import BalanceCard from './BalanceCard';
 
 import * as tapyrus from 'tapyrusjs-lib';
 import * as wallet from 'tapyrusjs-wallet';
 
 export default function WalletScreen({ navigation }) {
+  const tokenStore = new TokenStore();
+
   const [keyPair, setKeyPair] = useState<tapyrus.ECPair.ECPairInterface>();
   const keyStore = new wallet.KeyStore.ReactKeyStore(tapyrus.networks.dev);
   const dataStore = new wallet.DataStore.ReactDataStore();
@@ -35,18 +34,7 @@ export default function WalletScreen({ navigation }) {
     config,
   );
 
-  const [sendDialogVisible, setSendDialogVisible] = React.useState(false);
-  const [qrDialogVisible, setQrDialogVisible] = React.useState(false);
-
-  const [hasPermission, setHasPermission] = useState<boolean | undefined>(
-    undefined,
-  );
-  useEffect(() => {
-    (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
-  }, []);
+  const [addTokenDialogVisible, setAddTokenDialogVisible] = React.useState(false);
 
   const createOrFirstKey = async () => {
     const keys = await keyStore.keys();
@@ -65,204 +53,96 @@ export default function WalletScreen({ navigation }) {
     }
   };
 
-  const address = (keyPair: tapyrus.ECPair.ECPairInterface) => {
-    return tapyrus.payments.p2pkh({
-      pubkey: keyPair.publicKey,
-      network: tapyrus.networks.dev,
-    }).address!;
+  const [tpc, setTpc] = useState<wallet.Balance>(new wallet.Balance(wallet.Wallet.BaseWallet.COLOR_ID_FOR_TPC, 0, 0));
+  const [tokens, setTokens] = useState<[Token, wallet.Balance][]>([]);
+
+  const removeAllTokens = () => {
+    return tokenStore.clear();
+  };
+
+  const addToken = (tokenType: number, colorId: string, name: string, ticker: string) => {
+    tokenStore.add({colorId, tokenType, name, ticker}).then(() => {
+      refreshTokens();
+    }).then(() =>{
+      setAddTokenDialogVisible(false);
+    });
   };
 
   useEffect(() => {
-    createOrFirstKey();
+    reload();
   }, []);
+
+  const sync = () => {
+    currentWallet.update().then(reload);
+  };
+  const reload = () => {
+    createOrFirstKey();
+    currentWallet.balance().then((balance) => {
+      setTpc(balance);
+    });
+    refreshTokens();
+  };
+
+  const refreshTokens = () => {
+    tokenStore.tokens().then((tokens: Token[]) => {
+      return Promise.all(
+        tokens.map((token: Token) => {
+          return new Promise<[Token, wallet.Balance]>((resolve, reject) => {
+            currentWallet.balance(token.colorId).then((balance: wallet.Balance) => {
+              resolve([token, balance]);
+            }).catch((reason) => {
+              resolve([token, new wallet.Balance(token.colorId, 0, 0)]);
+            });
+          });
+        })
+      ).then((tokenAndBalances: [Token, wallet.Balance][]) => {
+        setTokens(_ => tokenAndBalances);
+      });
+    });
+  };
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
       header: ({ scene, navigation }) => (
-        <Header scene={scene} navigation={navigation} actions={[]} />
+        <Header scene={scene} navigation={navigation} actions={[
+          <Appbar.Action
+            icon="reload"
+            onPress={sync}
+          />,
+          <Appbar.Action
+            icon="delete"
+            onPress={() => {
+              removeAllTokens().then(() => {
+                setTokens(_ => []);
+              });
+            }}
+          />
+        ]} />
       ),
     });
   }, [navigation]);
 
-  const [amountToSend, setAmountToSend] = React.useState<number>(0);
-  const [addressToSend, setAddressToSend] = React.useState('');
-
-  const transfer = (keyPair: tapyrus.ECPair.ECPairInterface) => {
-    setProcessing(true);
-    const changePubkeyScript = tapyrus.payments.p2pkh({
-      pubkey: keyPair.publicKey,
-      network: tapyrus.networks.dev,
-    }).output!;
-    const param = {
-      colorId: wallet.Wallet.BaseWallet.COLOR_ID_FOR_TPC,
-      amount: new Number(amountToSend).valueOf(),
-      toAddress: addressToSend,
-    };
-    currentWallet
-      .update()
-      .then(() => {
-        return currentWallet.transfer([param], changePubkeyScript);
-      })
-      .finally(() => {
-        setProcessing(false);
-        setSendDialogVisible(false);
-      });
-  };
-
-  const [scanned, setScanned] = useState(false);
-  const [scannerVisible, setScannerVisible] = React.useState(false);
-  const openScanner = () => {
-    setSendDialogVisible(false);
-    setScannerVisible(true);
-  };
-
-  const closeScanner = () => {
-    setScannerVisible(false);
-    setSendDialogVisible(true);
-  };
-
-  const [processing, setProcessing] = useState(false);
-
-  const handleBarCodeScanned = ({ type, data }) => {
-    setScanned(true);
-    const address = data.replace(/^tapyrus:/, '');
-    setAddressToSend(address);
-    closeScanner();
-  };
-
-  const width = useWindowDimensions().width;
-  const height = useWindowDimensions().height;
-
-  if (hasPermission === null) {
-    return <Text>Requesting for camera permission</Text>;
-  }
-  if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
-  }
-
+  const nativeToken = new Token({
+    colorId: wallet.Wallet.BaseWallet.COLOR_ID_FOR_TPC,
+    tokenType: 0,
+    name: "TPC",
+    ticker: "TPC",
+  });
   return keyPair ? (
     <View style={styles.container}>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          flexBasis: 'auto',
-        }}
-      >
-        <Button
-          style={styles.button}
-          mode="outlined"
-          onPress={() => {
-            setSendDialogVisible(true);
-          }}
-        >
-          Send
-        </Button>
-        <Button
-          style={styles.button}
-          mode="outlined"
-          onPress={() => {
-            setQrDialogVisible(true);
-          }}
-        >
-          Receive
-        </Button>
-      </View>
+      <ScrollView style={styles.list}>
+        <BalanceCard token={nativeToken} balance={tpc} currentWallet={currentWallet} keyPair={keyPair} />
+        {
+          tokens.map(([token, balance]) => {
+            return <BalanceCard token={token} balance={balance} currentWallet={currentWallet} keyPair={keyPair} />;
+          })
+        }
+      </ScrollView>
+      <FAB icon="plus" style={styles.fab} onPress={() => {
+        setAddTokenDialogVisible(true);
+      }}/>
       <Portal>
-        <Dialog visible={scannerVisible} onDismiss={() => closeScanner()}>
-          <Dialog.Content style={{ height: height * 0.8 }}>
-            <BarCodeScanner
-              onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-              style={StyleSheet.absoluteFillObject}
-            />
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button
-              mode="text"
-              style={styles.button}
-              onPress={() => closeScanner()}
-            >
-              Close
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-        <Dialog
-          visible={sendDialogVisible}
-          onDismiss={() => setSendDialogVisible(false)}
-        >
-          {processing && (
-            <View style={styles.processing}>
-              <ActivityIndicator />
-            </View>
-          )}
-          <Dialog.Title>Send</Dialog.Title>
-          <Dialog.Content>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                flexBasis: 'auto',
-              }}
-            >
-              <TextInput
-                style={{ flex: 1 }}
-                label="Address"
-                value={addressToSend}
-                onChangeText={address => setAddressToSend(address)}
-              />
-              <IconButton
-                icon="camera"
-                onPress={() => {
-                  openScanner();
-                }}
-              />
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                flexBasis: 'auto',
-              }}
-            >
-              <TextInput
-                style={{ flex: 1 }}
-                label="Amount to send"
-                value={amountToSend}
-                onChangeText={amount => setAmountToSend(amount)}
-                keyboardType={'numeric'}
-              />
-              <Text style={{ margin: 8 }}>tap</Text>
-            </View>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button
-              style={styles.button}
-              mode="contained"
-              onPress={() => transfer(keyPair)}
-            >
-              Send
-            </Button>
-            <Button
-              style={styles.button}
-              onPress={() => setSendDialogVisible(false)}
-            >
-              Close
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-        <Dialog
-          visible={qrDialogVisible}
-          onDismiss={() => setQrDialogVisible(false)}
-        >
-          <Dialog.Title>Receive</Dialog.Title>
-          <Dialog.Content style={styles.qr}>
-            <QRCode value={`tapyrus:${address(keyPair)}`} size={width * 0.7} />
-            <Text style={{ fontSize: 12, margin: 8 }}>{address(keyPair)}</Text>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setQrDialogVisible(false)}>Close</Button>
-          </Dialog.Actions>
-        </Dialog>
+        <AddTokenDialog visible={addTokenDialogVisible} onClose={() => setAddTokenDialogVisible(false)} onAdd={(tokenType: number, colorId: string, name: string, ticker: string) => addToken(tokenType, colorId, name, ticker)} />
       </Portal>
     </View>
   ) : (
@@ -276,29 +156,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  qr: {
-    flexBasis: 'auto',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  send: {
-    flexBasis: 'auto',
-    alignItems: 'center',
+  list: {
+    width: '100%'
   },
   button: {
     margin: 8,
     width: 100,
   },
-  processing: {
+  card: {
+    margin: 8,
+  },
+  confirmed: {
+    margin: 8,
+    fontSize: 20,
+  },
+  unconfirmed: {
+    margin: 8,
+    fontSize: 16,
+    color: 'gray'
+  },
+  fab: {
     position: 'absolute',
-    left: 0,
+    margin: 32,
     right: 0,
-    top: 0,
     bottom: 0,
-    opacity: 0.5,
-    zIndex: 1000,
-    backgroundColor: 'black',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
