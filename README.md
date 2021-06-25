@@ -12,7 +12,15 @@ cd tapyrusjs-react-example
 2. Start tapyrus node and esplora
 
 ```
-docker compose up -d tapyrus esplora
+docker compose up -d
+```
+
+Then, generates first block to start to sync esplora to tapyrusd.
+
+```
+docker-compose exec tapyrus tapyrus-cli -conf=/etc/tapyrus/tapyrus.conf generatetoaddress 1 \
+  $(docker-compose exec tapyrus tapyrus-cli -conf=/etc/tapyrus/tapyrus.conf getnewaddress) \
+  cUJN5RVzYWFoeY8rUztd47jzXCu1p57Ay8V7pqCzsBD3PEXN7Dd4
 ```
 
 3. Build application
