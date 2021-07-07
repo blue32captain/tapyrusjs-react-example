@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native';
 import {
   Button,
   Dialog,
+  HelperText,
   TextInput,
   RadioButton,
 } from 'react-native-paper';
@@ -15,6 +16,16 @@ export default function AddTokenDialog({ visible, onClose, onAdd}) {
   const [colorId, setColorId] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [ticker, setTicker] = useState<string>('');
+
+  const invalidName = () => {
+    return !name;
+  };
+  const invalidTicker = () => {
+    return !ticker || ticker.length < 3 || ticker.length > 6;
+  };
+  const invalidColorId = () => {
+    return !colorId || colorId.length != 66;
+  };
 
   return <Dialog
           visible={visible}
@@ -43,12 +54,35 @@ export default function AddTokenDialog({ visible, onClose, onAdd}) {
                 flexBasis: 'auto',
               }}
             >
+              <HelperText type="error" style={{ flex: 1 }} visible={invalidName()}>
+                Name is invalid!
+              </HelperText>
+            </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                flexBasis: 'auto',
+              }}
+            >
               <TextInput
                 style={{ flex: 1 }}
                 label="Ticker"
                 value={ticker}
                 onChangeText={ticker => setTicker(ticker)}
               />
+              
+            </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                flexBasis: 'auto',
+              }}
+            >
+              <HelperText type="error" visible={invalidTicker()}>
+                Ticker is invalid!(Ticker should be 3-5 characters)
+              </HelperText>
             </View>
             <View
               style={{
@@ -87,6 +121,17 @@ export default function AddTokenDialog({ visible, onClose, onAdd}) {
                 value={colorId}
                 onChangeText={colorId => setColorId(colorId)}
               />
+            </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                flexBasis: 'auto',
+              }}
+            >
+              <HelperText type="error" style={{ flex: 1 }} visible={invalidColorId()}>
+                ColorId is invalid!
+              </HelperText>
             </View>
           </Dialog.Content>
           <Dialog.Actions>
