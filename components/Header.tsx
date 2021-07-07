@@ -3,45 +3,16 @@ import * as React from 'react';
 import {} from '@react-navigation/stack';
 
 export default function Header({ scene, navigation, previous, actions }) {
-  const [visible, setVisible] = React.useState(false);
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
+  const openMenu = () => {
+    navigation.openDrawer();
+  }
 
   return (
     <Appbar.Header>
       {previous ? (
         <Appbar.BackAction onPress={navigation.goBack} />
       ) : (
-        <Menu
-          visible={visible}
-          onDismiss={closeMenu}
-          anchor={
-            <Appbar.Action icon="menu" color="white" onPress={openMenu} />
-          }
-        >
-          <Menu.Item
-            onPress={() => {
-              navigation.navigate('Wallet');
-              setVisible(false);
-            }}
-            title="Wallet"
-          />
-          <Divider></Divider>
-          <Menu.Item
-            onPress={() => {
-              navigation.navigate('Keys');
-              setVisible(false);
-            }}
-            title="Keys"
-          />
-          <Menu.Item
-            onPress={() => {
-              navigation.navigate('Utxos');
-              setVisible(false);
-            }}
-            title="Utxos"
-          />
-        </Menu>
+        <Appbar.Action icon="menu" color="white" onPress={openMenu} />
       )}
       <Appbar.Content title={scene.route.name} />
       {actions}
